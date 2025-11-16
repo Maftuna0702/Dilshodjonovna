@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ideal Orzulari Xususiy Maktabi - Videodarslar</title>
+    <style>
+        body { margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#eef2f7; color:#333; }
+        header { background: linear-gradient(135deg,#4e54c8,#8f94fb); color:white; padding:20px; text-align:center; display:flex; align-items:center; justify-content:center; gap:15px; border-bottom:5px solid #3a3f9b; flex-wrap:wrap; }
+        header img { height:60px; border-radius:12px; }
+        .container { padding:25px; max-width:1100px; margin:auto; }
+        h2 { color:#4e54c8; margin-bottom:25px; text-align:center; }
+        .subjects { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; }
+        .subject-card { background:#fff; padding:25px; border-radius:20px; box-shadow:0 8px 20px rgba(0,0,0,0.15); cursor:pointer; text-align:center; transition:0.4s; font-size:20px; font-weight:600; }
+        .subject-card:hover { transform:translateY(-7px) scale(1.05); box-shadow:0 12px 25px rgba(0,0,0,0.25); background:#8f94fb; color:white; }
+        .videos { margin-top:30px; }
+        video { width:100%; border-radius:20px; margin-bottom:25px; }
+        .back { margin-bottom:25px; display:inline-block; padding:12px 20px; background:#4e54c8; color:#fff; border-radius:10px; cursor:pointer; transition:0.3s; text-decoration:none; font-weight:600; }
+        .back:hover { background:#8f94fb; }
+        .upload-section { margin-top:40px; padding:20px; background:#fff; border-radius:15px; box-shadow:0 6px 18px rgba(0,0,0,0.1); }
+        input[type='file'], input[type='text'], select { display:block; width:100%; padding:10px; margin:10px 0 20px; border-radius:8px; border:1px solid #ccc; }
+        button { padding:10px 20px; border:none; border-radius:8px; background:#4e54c8; color:#fff; font-weight:600; cursor:pointer; transition:0.3s; }
+        button:hover { background:#8f94fb; }
+        @media(max-width:600px){ header{flex-direction:column;font-size:24px;} video{height:200px;} }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://i.ibb.co/6XxR5cy/logo.png" alt="Maktab Logo">
+    Ideal Orzulari Xususiy Maktabi — Videodarslar
+</header>
+
+<div class="container">
+    <h2>Fanlar</h2>
+    <div class="subjects" id="subjectList">
+        <div class="subject-card" onclick="openSubject('matematika')">📘 Matematika</div>
+        <div class="subject-card" onclick="openSubject('ingliz')">📗 Ingliz tili</div>
+        <div class="subject-card" onclick="openSubject('ona')">📙 Ona tili</div>
+        <div class="subject-card" onclick="openSubject('fizika')">📕 Fizika</div>
+        <div class="subject-card" onclick="openSubject('kimyo')">🧪 Kimyo</div>
+        <div class="subject-card" onclick="openSubject('biologiya')">🌿 Biologiya</div>
+        <div class="subject-card" onclick="openSubject('tarix')">📜 Tarix</div>
+        <div class="subject-card" onclick="openSubject('rus')">🇷🇺 Rus tili</div>
+    </div>
+
+    <div class="videos" id="videoSection" style="display:none;">
+        <a class="back" onclick="goBack()">⬅ Orqaga</a>
+        <h2 id="subjectTitle"></h2>
+        <div id="videoList"></div>
+    </div>
+
+    <div class="upload-section">
+        <h2>Video Yuklash</h2>
+        <input type="file" id="videoFile" accept="video/*">
+        <input type="text" id="videoTitle" placeholder="Videoning nomi">
+        <select id="videoSubject">
+            <option value="matematika">Matematika</option>
+            <option value="ingliz">Ingliz tili</option>
+            <option value="ona">Ona tili</option>
+            <option value="fizika">Fizika</option>
+            <option value="kimyo">Kimyo</option>
+            <option value="biologiya">Biologiya</option>
+            <option value="tarix">Tarix</option>
+            <option value="rus">Rus tili</option>
+        </select>
+        <button onclick="uploadVideo()">Yuklash</button>
+        <p id="uploadMsg" style="margin-top:10px;color:green;font-weight:600;"></p>
+    </div>
+
+    <button style="margin-top:20px;padding:10px 20px;background:#4e54c8;color:#fff;border:none;border-radius:8px;cursor:pointer;" onclick="checkAdmin()">Admin kirish</button>
+</div>
+
+<script>
+    const adminPassword = "7000007";
+    let isAdmin = false;
+
+    const videos = JSON.parse(localStorage.getItem('videos') || '{"matematika":[],"ingliz":[],"ona":[],"fizika":[],"kimyo":[],"biologiya":[],"tarix":[],"rus":[]}');
+
+    function saveVideos() {
+        localStorage.setItem('videos', JSON.stringify(videos));
+    }
+
+    function openSubject(subject){
+        document.getElementById('subjectList').style.display='none';
+        document.getElementById('videoSection').style.display='block';
+        document.getElementById('subjectTitle').innerText=subject.toUpperCase();
+
+        const list = videos[subject].map(v => `
+            <h3>${v.title}</h3>
+            <video controls>
+                <source src='${v.url}' type='video/mp4'>
+            </video>
+        `).join('');
+
+        document.getElementById('videoList').innerHTML = list || '<p>Hozircha video mavjud emas</p>';
+    }
+
+    function goBack(){
+        document.getElementById('videoSection').style.display='none';
+        document.getElementById('subjectList').style.display='grid';
+    }
+
+    // Yuklash bo‘limini dastlab yashirish
+    document.querySelector('.upload-section').style.display='none';
+
+    function checkAdmin(){
+        const pwd = prompt("Yuklash bo‘limiga kirish uchun parolni kiriting:");
+        if(pwd === adminPassword){
+            isAdmin = true;
+            document.querySelector('.upload-section').style.display='block';
+        } else {
+            alert("Parol noto‘g‘ri! Siz faqat videolarni ko‘ra olasiz.");
+        }
+    }
+
+    function uploadVideo(){
+        if(!isAdmin){ alert("Siz yuklash huquqiga ega emassiz."); return; }
+        const fileInput=document.getElementById('videoFile');
+        const title=document.getElementById('videoTitle').value;
+        const subject=document.getElementById('videoSubject').value;
+        if(fileInput.files.length===0||!title){alert('Iltimos, videoni va nomini kiriting');return;}
+        const fileURL=URL.createObjectURL(fileInput.files[0]);
+        videos[subject].push({title:title,url:fileURL});
+        saveVideos();
+        document.getElementById('uploadMsg').innerText='Video muvaffaqiyatli yuklandi!';
+        fileInput.value=''; document.getElementById('videoTitle').value='';
+    }
+</script>
+
+</body>
+</html>
